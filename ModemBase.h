@@ -50,7 +50,7 @@ class ModemBase : public Stream
 
 	bool _S0_autoAnswer;			// Default false
 
-	void resetCommandBuffer(bool);
+	void resetCommandBuffer();
 
 	void (*onDialout)(char*);
 	void (*onDisconnect)();
@@ -89,7 +89,7 @@ class ModemBase : public Stream
 	 
 	 void resetToDefaults(void);
 
-	 void ShowStats();
+	 void ShowInfo();
 	 void TerminalMode();
 	 void answer();
 

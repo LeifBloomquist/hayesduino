@@ -38,7 +38,7 @@ size_t ModemBase::write(uint8_t var)
 	return 0; 
 }
 
-void ModemBase::resetCommandBuffer(bool forceReset)
+void ModemBase::resetCommandBuffer()
 {
 	memset(_commandBuffer, 0, strlen(_commandBuffer));
 }
@@ -77,7 +77,7 @@ void ModemBase::begin(Stream *serial, WiFly *wifly, void(*onDialoutHandler)(char
 	digitalWrite(RTS, HIGH);
 	digitalWrite(RI, LOW);
 
-	resetCommandBuffer(true);
+	resetCommandBuffer();
 }
 
 void ModemBase::loadDefaults(void)
@@ -179,7 +179,7 @@ void ModemBase::processCommandBuffer()
 	}
 	else if (strcmp(_commandBuffer, ("ATI")) == 0)
 	{
-		ShowStats();
+		ShowInfo();
 		printOK();
 	}
 	else if (strcmp(_commandBuffer, ("AT&F")) == 0)
@@ -215,12 +215,13 @@ void ModemBase::processCommandBuffer()
 		strncmp(_commandBuffer, ("ATD "), 4) == 0
 		)
 	{
-		onDialout(strstr(_commandBuffer, " ") + 1);
-		
+		onDialout(strstr(_commandBuffer, " ") + 1);	
+		resetCommandBuffer();  // This avoids port# string fragments on subsequent calls
 	}
 	else if (strncmp(_commandBuffer, ("ATDT"), 4) == 0)
 	{
 		onDialout(strstr(_commandBuffer, "ATDT") + 4);
+		resetCommandBuffer();  // This avoids port# string fragments on subsequent calls
 	}
 	else if ((strcmp(_commandBuffer, ("ATH0")) == 0 || strcmp(_commandBuffer, ("ATH")) == 0))
 	{
@@ -682,7 +683,7 @@ void ModemBase::processCommandBuffer()
 	}
 
 	strcpy(_lastCommandBuffer, _commandBuffer);
-	resetCommandBuffer(false);
+	resetCommandBuffer();
 }
 
 void ModemBase::ring()
@@ -803,7 +804,7 @@ void ModemBase::processData()
 				{
 					strcpy(_commandBuffer, _lastCommandBuffer);
 					processCommandBuffer();
-					memset(_commandBuffer, 0, sizeof(_commandBuffer));  // To prevent A matching with A/ again
+					resetCommandBuffer();  // To prevent A matching with A/ again
 				}
 			}
 			else if(_commandBuffer[0] == 'A' && _commandBuffer[1] == 'T')
@@ -812,7 +813,7 @@ void ModemBase::processData()
 			}
 			else
 			{
-				memset(_commandBuffer, 0, sizeof(_commandBuffer));
+				resetCommandBuffer();
 			}
 		}
 		else
@@ -873,6 +874,12 @@ void ModemBase::printResponse(const char* code, const __FlashStringHelper * msg)
 
 void ModemBase::answer()
 {
+	if (!_isRinging)
+	{
+		disconnect();  // This prints "NO CARRIER"
+		return;
+	}
+
 	_isConnected = true;
 	_isCommandMode = false;
 	_isRinging = false;
@@ -923,7 +930,7 @@ void ModemBase::answer()
 
 // ----------------------------------------------------------
 
-void ModemBase::ShowStats()
+void ModemBase::ShowInfo()
 {
 	char mac[20];
 	char ip[20];
