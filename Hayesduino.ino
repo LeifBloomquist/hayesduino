@@ -316,7 +316,7 @@ void loop()
 
 	char inbound;
 
-	if(client && client.connected())
+	if (client && client.connected())
 	{
 		if(!modem.getIsCommandMode() && client.available() > 0)
 		{

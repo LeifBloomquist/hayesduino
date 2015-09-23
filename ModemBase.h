@@ -8,16 +8,15 @@ License: http://hayesduino.codeplex.com/license
 
 #define __UNO__
 
+#define S2_escapeCharacter '+'
+#define S5_bsCharacter 8
+
 
 #ifndef _MODEMBASE_h
 #define _MODEMBASE_h
 
 #include <Stream.h>
 #include "Arduino.h"
-#include "DEBUG.h"
-#include "Global.h"
-
-#define STATUS_LED		 8
 
 #ifdef __UNO__
 #define RTS  A5
@@ -35,7 +34,8 @@ class ModemBase : public Stream
 	char _lastCommandBuffer[81];
 	char _commandBuffer[81];
 
-	HardwareSerial* _serial;
+	Stream* _serial;
+	WiFly * _wifly;
 
 	uint32_t _baudRate;
 	
@@ -49,60 +49,21 @@ class ModemBase : public Stream
 	bool _quietMode;
 
 	bool _S0_autoAnswer;			// Default false
-	uint8_t _S1_ringCounter;		// Default 0
-	uint8_t _S2_escapeCharacter;	// Default 43
-	uint8_t _S3_crCharacter;		// Default 13
-	uint8_t _S4_lfCharacter;		// Default 10
-	uint8_t _S5_bsCharacter;		// Default 8
-	uint8_t _S6_waitBlindDial;		// Default 2 seconds
-	uint8_t _S7_waitForCarrier;		// Default 50 seconds
-	uint8_t _S8_pauseForComma;		// Default 2 seconds
-	uint8_t _S9_cdResponseTime;		// Default 6 (0.6 seconds)
-	uint8_t _S10_delayHangup;		// Default 14 (1.4 seconds)
-	uint8_t _S11_dtmf;				// Default 95 miliseconds
-	uint8_t _S12_escGuardTime;		// Default 50 (1.0 second)
-	uint8_t _S18_testTimer;			// Default 0 seconds
-	uint8_t _S25_delayDTR;			// Default 5
-	uint8_t _S26_delayRTS2CTS;		// Default 5 miliseconds
-	uint8_t _S30_inactivityTimer;	// Default 0 (disable)
-	uint8_t _S37_lineSpeed;			// Default 0 (auto)
-	uint8_t _S38_delayForced;		// Default 20 seconds
-	/*
-S37 Command options:
-0 Attempt auto mode connection
-1 Attempt to connect at 300 bit/s
-2 Attempt to connect at 300 bit/s
-3 Attempt to connect at 300 bit/s
-5 Attempt to connect at 1200 bit/s
-6 Attempt to connect at 2400 bit/s
-7 Attempt to connect in V.23 75/1200 mode.
-8 Attempt to connect at 9600 bit/s
-9 Attempt to connect at 12000 bit/s
-10 Attempt to connect at 14400 bit/s
-	*/
 
 	void resetCommandBuffer(bool);
 
-//	void (*onDisconnect)(EthernetClient *client);
-	void (*onDialout)(char*, ModemBase*);
+	void (*onDialout)(char*);
+	void (*onDisconnect)();
 
-	void setLineSpeed(void);
-	void loadDefaults(void);
-	void saveDefaults(void);
-	void writeAddressBook(uint16_t, char *);
-	char* getAddressBook(uint16_t);
-#ifndef __UNO__
-	bool processCommandBufferExtended(EthernetClient *client);
-#endif
 	void printOK(void);
-	void printResponse(const char* code, const char* msg);
+	void printError(void);
 	void printResponse(const char* code, const __FlashStringHelper * msg);
-	int getString(Stream *client, char *buffer, int maxLength);
+	void loadDefaults();
 
  public:
 	 ModemBase();
 
-	 void begin(Stream*, Stream*, void(*)(char*, ModemBase*));
+	 void begin(Stream*, WiFly*, void(*)(char*), void(*)());
 
   	 virtual int available(void);
      virtual int peek(void);
@@ -117,17 +78,20 @@ S37 Command options:
 	 bool getDcdInverted(void);
 	 bool getIsConnected(void);
 	 bool getIsRinging(void);
-	 void setIsRinging(bool);
 	 bool getIsCommandMode(void);
 	 int toggleCarrier(boolean isHigh);
 	 void disconnect();
-	 void connect(Stream *client);
+	 void ring();
 	 void connectOut(void);
 
-	 void processCommandBuffer(Stream *client);
-	 void processData(Stream *client);
+	 void processCommandBuffer();
+	 void processData();
 	 
 	 void resetToDefaults(void);
+
+	 void ShowStats();
+	 void TerminalMode();
+	 void answer();
 
 	 using Print::write;
 };
