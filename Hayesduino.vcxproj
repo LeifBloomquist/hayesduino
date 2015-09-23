@@ -56,11 +56,11 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>s:\arduino-1.5.2\hardware\arduino\avr\cores\arduino;s:\arduino-1.5.2\hardware\arduino\avr\variants\mega;s:\arduino-1.5.2\hardware\arduino\avr\libraries\Ethernet;s:\arduino-1.5.2\hardware\arduino\avr\libraries\Ethernet\utility;s:\arduino-1.5.2\hardware\arduino\avr\libraries\SPI;s:\arduino-1.5.2\hardware\arduino\avr\libraries\SPI\utility;s:\arduino-1.5.2\hardware\arduino\avr\libraries\EEPROM;s:\arduino-1.5.2\hardware\arduino\avr\libraries\EEPROM\utility;s:\arduino-1.5.2\libraries\SD;s:\arduino-1.5.2\libraries\SD\utility;s:\arduino-1.5.2\hardware\tools\avr\avr\include\;s:\arduino-1.5.2\hardware\tools\avr\avr\include\avr\;s:\arduino-1.5.2\hardware\tools\avr\avr\;s:\arduino-1.5.2\hardware\tools\avr\lib\gcc\avr\4.3.2\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>S:\Hayesduino\Visual Micro\.Hayesduino.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\standard;C:\Leif\GitHub\hayesduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\EEPROM;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\EEPROM\utility;C:\Program Files (x86)\Arduino\libraries\Ethernet\src;C:\Program Files (x86)\Arduino\libraries\Ethernet\src\utility;C:\Program Files (x86)\Arduino\libraries\SD\src;C:\Program Files (x86)\Arduino\libraries\SD\src\utility;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\SPI;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\SPI\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\4ciz0kfr.mmg\Micro Platforms\default\debuggers;C:\Users\Leif\Documents\Arduino\libraries;C:\Leif\GitHub\WiFiCart\MicroView\WiFiModem-Menu;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\standard;C:\Users\Leif\Documents\Arduino\libraries\elapsedMillis;C:\Users\Leif\Documents\Arduino\libraries\Microview;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\SoftwareSerial;C:\Users\Leif\Documents\Arduino\libraries\WiFlyHQ;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\4ciz0kfr.mmg\Micro Platforms\default\debuggers;C:\Users\Leif\Documents\Arduino\libraries;{runtime.tools.avr-gcc.path}/avr/include/;{runtime.tools.avr-gcc.path}//avr/include/avr/;{runtime.tools.avr-gcc.path}/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>C:\Leif\GitHub\hayesduino\__vm\.hayesduino.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>__AVR_ATmega2560__;ARDUINO=152;ARDUINO_MAIN;__AVR__;__avr__;F_CPU=16000000L;__cplusplus;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__AVR_ATmega328p__;__AVR_ATmega328P__;F_CPU=16000000L;ARDUINO=176;ARDUINO_AVR_UNO;ARDUINO_ARCH_AVR;__cplusplus;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -81,6 +81,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="ModemBase.h" />
     <ClInclude Include="Visual Micro\.Hayesduino.vsarduino.h" />
+    <ClInclude Include="__vm\.hayesduino.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libraries\Ethernet\EthernetClient.cpp" />

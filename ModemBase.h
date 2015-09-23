@@ -6,19 +6,13 @@ License: http://hayesduino.codeplex.com/license
 ***********************************************/
 #include "HardwareSerial.h"
 
-#ifdef UBRR1H
-#define __MEGA__
-#define POWER_LED 29
-#else
 #define __UNO__
-#endif
+
 
 #ifndef _MODEMBASE_h
 #define _MODEMBASE_h
-#include <Stream.h>
-#include <SD.h>
-#include "EthernetClient.h"
 
+#include <Stream.h>
 #include "Arduino.h"
 #include "DEBUG.h"
 #include "Global.h"
@@ -26,45 +20,12 @@ License: http://hayesduino.codeplex.com/license
 #define STATUS_LED		 8
 
 #ifdef __UNO__
-#define DTE_RTS  2  // Orange
-#define DCE_CTS  2
-#define DTE_DTR  7  // White/Green
-#define DCE_DCD	 7
-#define DCE_RI   4  // White/Brown
-#define DTE_DCD  5  // Brown
-#define DCE_DTR  5
-#define DTE_CTS  6  // White/Orange
-#define DCE_RTS  6
-#define DTE_DSR  3  // White/Blue
-#define TxD      0  // Blue
-#define RxD      1 // Green
-#else
-// MEGA
-#define DTE_RTS  22  // Orange
-#define DCE_CTS  22
-#define DTE_DTR  23  // White/Green
-#define DCE_DCD  23
-#define DCE_RI   24  // White/Brown
-#define DTE_DCD  25  // Brown
-#define DCE_DTR  25
-#define DTE_CTS  27  // White/Orange
-#define DCE_RTS  27
-#define DTE_DSR  29  // White/Blue
-#define TxD      18  // Blue
-#define RxD      19 // Green
-
-//#define DTE_RTS  2  // Orange
-//#define DCE_CTS  2
-//#define DTE_DTR  7  // White/Green
-//#define DCE_DCD	 7
-//#define DCE_RI   4  // White/Brown
-//#define DTE_DCD  5  // Brown
-//#define DCE_DTR  5
-//#define DTE_CTS  6  // White/Orange
-//#define DCE_RTS  6
-//#define DTE_DSR  3  // White/Blue
-//#define TxD      19  // Blue
-//#define RxD      18 // Green
+#define RTS  A5
+#define DTR  A4
+#define RI   A3
+#define DCD  A2
+#define CTS  A1
+#define DSR  A0
 #endif
 
 class ModemBase : public Stream
@@ -122,7 +83,7 @@ S37 Command options:
 
 	void resetCommandBuffer(bool);
 
-	void (*onDisconnect)(EthernetClient *client);
+//	void (*onDisconnect)(EthernetClient *client);
 	void (*onDialout)(char*, ModemBase*);
 
 	void setLineSpeed(void);
@@ -136,15 +97,12 @@ S37 Command options:
 	void printOK(void);
 	void printResponse(const char* code, const char* msg);
 	void printResponse(const char* code, const __FlashStringHelper * msg);
-	int getString(EthernetClient *client, char *buffer, int maxLength);
+	int getString(Stream *client, char *buffer, int maxLength);
 
  public:
 	 ModemBase();
 
-	void begin(
-			HardwareSerial *serial, 
-			void (*onDisconnectHandler)(EthernetClient *client),
-			void (*onDialoutHandler)(char*, ModemBase*));
+	 void begin(Stream*, Stream*, void(*)(char*, ModemBase*));
 
   	 virtual int available(void);
      virtual int peek(void);
@@ -162,12 +120,12 @@ S37 Command options:
 	 void setIsRinging(bool);
 	 bool getIsCommandMode(void);
 	 int toggleCarrier(boolean isHigh);
-	 void disconnect(EthernetClient *client);
-	 void connect(EthernetClient *client);
+	 void disconnect();
+	 void connect(Stream *client);
 	 void connectOut(void);
 
-	 void processCommandBuffer(EthernetClient *client);
-	 void processData(EthernetClient *client, File *myLogFile);
+	 void processCommandBuffer(Stream *client);
+	 void processData(Stream *client);
 	 
 	 void resetToDefaults(void);
 

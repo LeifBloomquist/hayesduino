@@ -4,27 +4,16 @@ HAYESDUINO PROJECT - COPYRIGHT 2013, PAYTON BYRD
 Project homepage: http://hayesduino.codeplex.com
 License: http://hayesduino.codeplex.com/license
 ***********************************************/
-#include "ModemBase.h"
-#include "Dns.h"
-#include "EthernetClient.h"
-#include "Ethernet.h"
-#include "HardwareSerial.h"
 
-#define DEBUG 1
-#if DEBUG == 1
-#include "Logger.h"
-#endif
+// This version modded by Leif Bloomquist for use on the Wi-Fi Modem!
+
+#include "..\..\..\hayesduino\ModemBase.h"
 #include "EEPROM.h"
 
-#ifdef UBRR1H
-#define __MEGA__
-#define POWER_LED 29
-#else
 #define __UNO__
-#endif
 
 
-int ModemBase::getString(EthernetClient *client, char *buffer, int maxLength)
+int ModemBase::getString(Stream *client, char *buffer, int maxLength)
 {
 	char counter = 0;
 	char c;
@@ -78,19 +67,16 @@ void ModemBase::resetCommandBuffer(bool forceReset)
 
 ModemBase::ModemBase()
 {
-	pinMode(DCE_RI , OUTPUT);
-	pinMode(DCE_RTS, OUTPUT);
-	//pinMode(DCE_RTS, INPUT);
-	pinMode(DCE_DCD, INPUT);
-	pinMode(DCE_CTS, INPUT);
-	//pinMode(DCE_CTS, OUTPUT);
-	pinMode(DCE_DTR, OUTPUT);
-	pinMode(DTE_DSR, OUTPUT);
+	pinMode(RI , OUTPUT);
+	pinMode(RTS, OUTPUT);
+	pinMode(RTS, INPUT);
+	pinMode(DCD, INPUT);
+	pinMode(CTS, INPUT);
 
-	digitalWrite(DCE_RI, LOW);
-	digitalWrite(DCE_CTS, HIGH);
-	digitalWrite(DTE_DSR, HIGH);
-	digitalWrite(DCE_DTR, toggleCarrier(false));
+	digitalWrite(RI, LOW);
+	digitalWrite(CTS, HIGH);
+	digitalWrite(DSR, HIGH);
+	digitalWrite(DTR, toggleCarrier(false));
 }
 
 void ModemBase::factoryReset(void)
@@ -121,10 +107,6 @@ void ModemBase::factoryReset(void)
 
 	EEPROM.write(MODEM_INITIALIZED_ADDRESS, MODEM_INITIALIZED_STATE);
 
-	writeAddressBook(ADDRESS_BOOK_START + (ADDRESS_BOOK_LENGTH * 0), 
-		(char*)F("commodoreserver.com:1541"));
-
-	//if(Serial) Serial.println(F("Initialized modem to factory defaults."));
 	if(Serial) println(F("INITIALIZED MODEM SETTINGS TO FACTORY DEFAULTS."));
 }
 
@@ -193,31 +175,9 @@ void ModemBase::loadDefaults(void)
 	}
 }
 
-void ModemBase::begin(
-	HardwareSerial *serial, 
-	void (*onDisconnectHandler)(EthernetClient *client),
-	void (*onDialoutHandler)(char*, ModemBase*))
+void ModemBase::begin(Stream *wifiserial, Stream *c64serial, void(*)(char*, ModemBase*))
 {
-#if DEBUG == 1
-	lggr.println(F("Beginning ModemBase..."));
-#endif
-
-	onDisconnect = onDisconnectHandler;
-	onDialout = onDialoutHandler;
-
 	_escapeCount = 0;
-
-	if(serial)
-	{
-		_serial = serial;
-	}
-	else
-	{
-#if DEBUG == 1
-		lggr.println(F("serial is not initialized. panicking."));
-#endif
-		while(true);
-	}
 
 	_isCommandMode = true;
 	_isConnected = false;
@@ -227,21 +187,11 @@ void ModemBase::begin(
 
 	setLineSpeed();
 
-	digitalWrite(DCE_DTR, toggleCarrier(false));
-	digitalWrite(DCE_RTS, HIGH);
-	digitalWrite(DCE_RI, LOW);
+	digitalWrite(DTR, toggleCarrier(false));
+	digitalWrite(RTS, HIGH);
+	digitalWrite(RI, LOW);
 
 	resetCommandBuffer(true);
-
-#ifdef __UNO__
-	println(F("COMET BBS READY."));
-	//print(F("S90=")); println((int)_isDcdInverted);
-#else
-	println(F("HAYESDUINO EXTENDED SET READY."));
-#endif
-#if DEBUG == 1
-		lggr.println(F("Modem initialized."));
-#endif
 }
 
 uint32_t ModemBase::getBaudRate(void)
@@ -302,7 +252,7 @@ int ModemBase::toggleCarrier(boolean isHigh)
 	return result;
 }
 
-void ModemBase::disconnect(EthernetClient *client)
+void ModemBase::disconnect()
 {
 	//println(F("Disconnecting..."));
 
@@ -320,18 +270,8 @@ void ModemBase::disconnect(EthernetClient *client)
 	//print('\r'); 
 	//print((char)_S4_lfCharacter);
 
-	digitalWrite(DCE_RTS, LOW);
-
-	delay(1000);
-
-	if(onDisconnect != NULL)
-	{
-		onDisconnect(client);
-	}
-
-	digitalWrite(DCE_DTR, toggleCarrier(false));
-
-	//delay(5000);
+	digitalWrite(RTS, LOW);
+	digitalWrite(DTR, toggleCarrier(false));
 }
 
 void ModemBase::writeAddressBook(uint16_t address, char * host)
@@ -748,7 +688,7 @@ bool ModemBase::processCommandBufferExtended(EthernetClient *client)
 }
 #endif
 
-void ModemBase::processCommandBuffer(EthernetClient *client)
+void ModemBase::processCommandBuffer(Stream *client)
 {
 	for(int i=0; i < strlen(_commandBuffer); ++i)
 	{
@@ -765,9 +705,10 @@ void ModemBase::processCommandBuffer(EthernetClient *client)
 		loadDefaults();
 		printOK();
 	}
-	else if(strncmp(_commandBuffer, ("ATT "), 4) == 0)
+	else if(strncmp(_commandBuffer, ("ATDT"), 4) == 0)
 	{
-		
+	
+		/*
 		EthernetClient *newClient = new EthernetClient();
 
 		IPAddress remote_addr;
@@ -813,8 +754,9 @@ void ModemBase::processCommandBuffer(EthernetClient *client)
 		}
 		else
 		{
+		*/
 			_serial->println(F("COULD NOT CONNECT."));
-		}
+	
 	}
 	else if(strcmp(_commandBuffer, ("AT&W")) == 0)
 	{
@@ -882,7 +824,7 @@ void ModemBase::processCommandBuffer(EthernetClient *client)
 			}
 		}
 
-		digitalWrite(DCE_RTS, LOW);
+		digitalWrite(RTS, LOW);
 	}
 	else if(strcmp(_commandBuffer, ("ATD")) == 0)
 	{
@@ -928,7 +870,7 @@ void ModemBase::processCommandBuffer(EthernetClient *client)
 #if DEBUG == 1
 		lggr.println(F("Hanging up...."));
 #endif
-		disconnect(client);
+		disconnect();
 	}
 	else if(strcmp(_commandBuffer, ("ATO")) == 0 && 
 		_isConnected)
@@ -1446,7 +1388,7 @@ void ModemBase::processCommandBuffer(EthernetClient *client)
 	//println(F("after resetCommandBuffer(false)")); delay(1000);
 }
 
-void ModemBase::connect(EthernetClient *client)
+void ModemBase::connect(Stream* client)
 {
 	_isConnected = _isRinging = true;
 
@@ -1459,11 +1401,11 @@ void ModemBase::connect(EthernetClient *client)
 	{
 		printResponse("2", F("RING"));
 
-		digitalWrite(DTE_DCD, toggleCarrier(true));
+		digitalWrite(DCD, toggleCarrier(true));
 
-		digitalWrite(DCE_RI, HIGH);
+		digitalWrite(RI, HIGH);
 		delay(250);
-		digitalWrite(DCE_RI, LOW);
+		digitalWrite(RI, LOW);
 	}
 }
 
@@ -1512,23 +1454,20 @@ void ModemBase::connectOut()
 		}
 	}
 
-
-	digitalWrite(DCE_DTR, toggleCarrier(true));
+	digitalWrite(DTR, toggleCarrier(true));
 
 	_isConnected = true;
 	_isCommandMode = false;
 	_isRinging = false;
 }
 
-void ModemBase::processData(EthernetClient *cl, File *myLogFile)
+void ModemBase::processData(Stream *cl)
 {
-	digitalWrite(DCE_RTS, LOW);
+	digitalWrite(RTS, LOW);
 	//if(digitalRead(DCE_CTS) == HIGH) Serial.write("::DCE_CTS is high::");
 	//if(digitalRead(DCE_CTS) == LOW) Serial.write("::DCE_CTS is low::");
 	while(_serial->available())
 	{
-		Serial.write("::available::");
-		//digitalWrite(DCE_RTS, HIGH);
 		if(_isCommandMode)
 		{
 			char inbound = toupper(_serial->read());
@@ -1591,7 +1530,6 @@ void ModemBase::processData(EthernetClient *cl, File *myLogFile)
 				if(!_isCommandMode)
 				{
 					int result = cl->write(inbound);
-					myLogFile->write(inbound);
 					if(result != 1) 
 					{
 						println();
